@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Rawan ❤️</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+#scene {
+    position: fixed;
+    inset: 0;
+}
+
+.message {
+    position: fixed;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    color: white;
+    font-size: clamp(25px, 7vw, 40px);
+    font-weight: bold;
+    white-space: nowrap;
+    text-shadow: 0 0 12px #ff80c8, 0 0 35px #ff1493;
+    animation: glow 2s infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes glow {
+    from { opacity: .7; }
+    to { opacity: 1; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="scene"></div>
+<div class="message">أنا بحبك 💗</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(
+    55,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+
+camera.position.set(0, 0, 30);
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x000000);
+
+document.getElementById("scene").appendChild(renderer.domElement);
+
+// القلب الجزيئي
+const positions = [];
+const colors = [];
+
+const count = 14000;
+
+for (let i = 0; i < count; i++) {
+    const t = Math.random() * Math.PI * 2;
+
+    const edgeX = 16 * Math.pow(Math.sin(t), 3);
+
+    const edgeY =
+        13 * Math.cos(t)
+        - 5 * Math.cos(2 * t)
+        - 2 * Math.cos(3 * t)
+        - Math.cos(4 * t);
+
+    const fill = Math.sqrt(Math.random());
+
+    const x = edgeX * fill * 0.55;
+    const y = edgeY * fill * 0.55;
+    const z = (Math.random() - 0.5) * 2;
+
+    positions.push(x, y, z);
+
+    const color = new THREE.Color();
+
+    const shade = Math.random();
+
+    if (shade > 0.9) color.set("#ffffff");
+    else if (shade > 0.5) color.set("#ffb7df");
+    else color.set("#ff55b4");
+
+    colors.push(color.r, color.g, color.b);
+}
+
+const heartGeometry = new THREE.BufferGeometry();
+
+heartGeometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(positions, 3)
+);
+
+heartGeometry.setAttribute(
+    "color",
+    new THREE.Float32BufferAttribute(colors, 3)
+);
+
+const heartMaterial = new THREE.PointsMaterial({
+    size: 0.065,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.95,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+});
+
+const heart = new THREE.Points(
+    heartGeometry,
+    heartMaterial
+);
+
+scene.add(heart);
+
+// النجوم
+const starPositions = [];
+
+for (let i = 0; i < 2000; i++) {
+    starPositions.push(
+        (Math.random() - 0.5) * 75,
+        (Math.random() - 0.5) * 60,
+        -Math.random() * 35
+    );
+}
+
+const starGeometry = new THREE.BufferGeometry();
+
+starGeometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(starPositions, 3)
+);
+
+const stars = new THREE.Points(
+    starGeometry,
+    new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.045,
+        transparent: true,
+        opacity: 0.8
+    })
+);
+
+scene.add(stars);
+
+// حلقة الكلمات
+const ring = new THREE.Group();
+scene.add(ring);
+
+const phrases = [
+    "I Love You",
+    "Forever",
+    "My World",
+    "You & Me",
+    "My Life",
+    "Always",
+    "رورو ❤️",
+    "أنا بحبك",
+    "Love You"
+];
+
+function makeText(text, angle) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = 512;
+    canvas.height = 128;
+
+    ctx.font = "bold 65px Arial";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ffd5ed";
+    ctx.shadowColor = "#ff35b0";
+    ctx.shadowBlur = 25;
+
+    ctx.fillText(text, 256, 85);
+
+    const texture = new THREE.CanvasTexture(canvas);
+
+    const sprite = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true
+        })
+    );
+
+    const radius = 10;
+
+    sprite.position.set(
+        Math.cos(angle) * radius,
+        -8 + Math.sin(angle) * 1.5,
+        Math.sin(angle) * 5
+    );
+
+    sprite.scale.set(3.4, 0.85, 1);
+
+    ring.add(sprite);
+}
+
+phrases.forEach((phrase, i) => {
+    makeText(phrase, i / phrases.length * Math.PI * 2);
+});
+
+// إضاءة خفيفة
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+const light = new THREE.PointLight(0xff258e, 100, 100);
+light.position.set(0, 5, 15);
+scene.add(light);
+
+// الحركة
+const clock = new THREE.Clock();
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const t = clock.getElapsedTime();
+
+    const pulse = 1 + Math.sin(t * 3) * 0.035;
+
+    heart.scale.set(pulse, pulse, pulse);
+
+    heart.rotation.y = Math.sin(t * 0.5) * 0.18;
+    heart.rotation.z = Math.sin(t * 0.3) * 0.025;
+
+    ring.rotation.y = t * 0.25;
+
+    stars.rotation.z = t * 0.002;
+
+    renderer.render(scene, camera);
+}
+
+animate();
+
+// ضبط حجم الشاشة
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+});
+</script>
+
+</body>
+</html>
